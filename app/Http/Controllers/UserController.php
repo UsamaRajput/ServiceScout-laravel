@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Validator;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -50,11 +51,12 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
-        $validate = $request->validate([
+        $validator = Validator::make($request->all(), [
             'email'=>'required|email|exists:users,email',
             'password'=>'required|min:8|max:16'
         ]);
-        if ($validate) {
+
+        if (!$validator->fails()) {
             $email = $request->email;
             $password = $request->password;
 
@@ -83,11 +85,29 @@ class UserController extends Controller
                     "message" => 'Email not found'
                 ], 404);
             }
+        }else{
+            return response()->json([
+                'data'=>[],
+                "mesage"=>$validator->errors()
+            ],403);
         }
     }
 
     public function register(Request $request)
     {
-        $email = $request->email;
+        $validator = Validator::make($request->all(), [
+            'email'=>'required|email|unique:users,email',
+            'password'=>'required|min:8|max:16'
+        ]);
+        if (!$validator->fails()) {
+            return "hi";
+        }else{
+            return response()->json([
+                'data'=>[],
+                "mesage"=>$validator->errors()
+            ],403);
+        }
     }
+
+
 }
